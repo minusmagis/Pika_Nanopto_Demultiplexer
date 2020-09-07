@@ -136,7 +136,8 @@ void loop()
         digitalWrite(A3, NotBit4);
         digitalWrite(A2, NotBit4);
         delay(5);
-        for (uint8_t i = 2; i < 14; i++) //Write low on every bit to limit current consumption, this is to give more power to the following bits that will require it
+        
+        for (uint8_t i = 2; i < 14; i++)                                      //Write low on every bit to limit current consumption, in this way we give all the power to the following bits, which will require it
         {
           digitalWrite(i, LOW);
         }
@@ -156,7 +157,8 @@ void loop()
         digitalWrite(7, NotBit5);
         digitalWrite(8, NotBit5);
         delay(5);
-        for (uint8_t i = 2; i < 14; i++)
+        
+        for (uint8_t i = 2; i < 14; i++)                                      // We finally write all bits to LOW to reduce power consumption
         {
           digitalWrite(i, LOW);
         }
@@ -171,47 +173,51 @@ void loop()
 
       }
     }
+    
     else {
-      //Serial.println("nono");
-      Serial.read();
+      
+      //Serial.println("Incorrect Cellbit");                                  // For debugging purposes
+      
+      Serial.read();                                                          // In case we receive an empty input we read the serial to clear it
     }
   }
 }
 
-uint8_t invert(uint8_t value)
-{
-  uint8_t Buffer = 0; //Buffer value that will be used in the function
-  if (value == 1 || value == 0)  //Only perform the function if the input values are binary
+uint8_t invert(uint8_t value)                                                 // This is a small function that inverts the value of the incoming bit, if the input is 1 the output is 0 and viceversa, the difference with a NOT statement
+{                                                                             // is that this works with a uint8_t value and not a boolean
+  
+  uint8_t Buffer = 0;                                                         //Buffer value that will be used in the function
+  if (value == 1 || value == 0)                                               //Only perform the function if the input values are binary
   {
-    Buffer = (value - 1) * (value - 1); // transforms a 0 into a 1 and viceversa
+    Buffer = (value - 1) * (value - 1);                                       // transforms a 0 into a 1 and viceversa
   }
-  else
+  else                                                                        // If the values are not binary in nature do nothing
   {
   }
-  return (Buffer); // Return the inverted value
+  return (Buffer);                                                            // Return the inverted value
 }
 
-uint8_t ReadBit (String BitCode, uint8_t BitNum)
+
+uint8_t ReadBit (String BitCode, uint8_t BitNum)                              // This function reads the specified bit within the bitstring of the incoming command
 {
-  uint8_t Bit = 1;
+  uint8_t Bit = 1;                                                            // We first initialize the variables we will use
   String Buffer = String("");
-  Buffer = BitCode.substring((BitNum - 1), BitNum);
-  Bit = Buffer.toInt();
-  return (Bit);
+  Buffer = BitCode.substring((BitNum - 1), BitNum);                           // We extract the substring from the bitstring called BitCode within the specified position
+  Bit = Buffer.toInt();                                                       // We transform the character into an integer
+  return (Bit);                                                               // We return the value
 }
 
 
-
-String SelectedCellName(String CellName)
+String SelectedCellName(String CellName)                                      // This function translates the input serial string to its corresponding bitstring, it is grossely unoptimized but it works.
 {
-
-  String bitString = String("");
+  String bitString = String("");                                              // We initialize some variables
   String HotCold = String("");
-  HotCold = CellName.substring(0, 2);
+  
+  HotCold = CellName.substring(0, 2);                                         // We extract the first character to see if the input is prompting us to heat or cool the setup
 
-  if (CellName == "82464849")                               //R.01 *
-  {
-    bitString = String("01000");                            //R.01 *
+  if (CellName == "82464849")                               //R.01 *          // If the input CellName is equal to this particular string, which in this case corresponds to R.01 we set the bitstring to 01000 which turns the 
+  {                                                                           // relays so that the connected cell is R.01
+    bitString = String("01000");                            //R.01 *          // We chech if the cellname corresponds to any of the specified commands and if it does we set the bitstring to its corresponding cell
   }
   else if (CellName == "82464850")                          //R.02 *
   {
@@ -305,62 +311,78 @@ String SelectedCellName(String CellName)
   {
     bitString = String("10000");                            //L.12 *
   }
-  else if (HotCold == "72")                                   // heating
+  
+  else if (HotCold == "72")                                                       // If the first letter is an H it means that the user wants to heat up the holder
   {
-    if (CellName.length() == 8) {
-      int PWMSignal = 0;
-      //Serial.print("Heating at this power = ");
-      PWMSignal = Stringtoint(CellName);
-      PWMSignal = constrain(PWMSignal, 0, 255);
-      digitalWrite(HnCPin, LOW);                               // Bring the pin low to set it for heating
-      delay(10);
-      analogWrite(PWMPin, PWMSignal);                          //Write the power at wich you want to heat up
-      Serial.println(PWMSignal);
+    if (CellName.length() == 8) {                                                 // After the H there must be a 3 digit number from 000 to 255 that specifies the amount of power we want to use for heating, being 0 no power and 255 max power
+      
+      int PWMSignal = 0;                                                          // We initialize some variables
+            
+      PWMSignal = Stringtoint(CellName);                                          // We turn the CellName which contains the 3 digit number into an integer using the Stringtoint() function
+      PWMSignal = constrain(PWMSignal, 0, 255);                                   // We constrain the input value within the limits of the arduino PWM
+      digitalWrite(HnCPin, LOW);                                                  // Bring the pin low to set it for heating
+      delay(10);                                                                  // A small delay prevents having the H bridge in short circuit
+      analogWrite(PWMPin, PWMSignal);                                             // Write the power at wich you want to heat up
+            
+      //Serial.print("Heating at this power = ");                                 // For debugging purposes
+      //Serial.println(PWMSignal);
     }
   }
-  else if (HotCold == "67")                                               // Cooling
+  else if (HotCold == "67")                                                       // If the first letter is an C it means that the user wants to cool down the holder
   {
-    if (CellName.length() == 8) {
-      int PWMSignal = 0;
-      //Serial.print("Cooling at this power = ");
-      PWMSignal = Stringtoint(CellName);
-      PWMSignal = constrain(PWMSignal, 0, 255);
-      digitalWrite(HnCPin, HIGH);                               // Bring the pin high to set it for cooling
-      delay(10);
-      analogWrite(PWMPin, PWMSignal);                          //Write the power at wich you want to cool down
-      Serial.println(PWMSignal);
+    if (CellName.length() == 8) {                                                 // After the C there must be a 3 digit number from 000 to 255 that specifies the amount of power we want to use for cooling, being 0 no power and 255 max power
+      
+      int PWMSignal = 0;                                                           // We initialize some variables
+
+      PWMSignal = Stringtoint(CellName);                                          // We turn the CellName which contains the 3 digit number into an integer using the Stringtoint() function
+      PWMSignal = constrain(PWMSignal, 0, 255);                                   // We constrain the input value within the limits of the arduino PWM
+      digitalWrite(HnCPin, HIGH);                                                 // Bring the pin high to set it for cooling
+      delay(10);                                                                  // A small delay prevents having the H bridge in short circuit
+      analogWrite(PWMPin, PWMSignal);                                             //Write the power at wich you want to cool down
+
+      //Serial.print("Cooling at this power = ");                                 // For debugging purposes
+      //Serial.println(PWMSignal);
     }
   }
+  
   else
   {
-    //Serial.println("no");
+    //Serial.println("Cell not recognized");                                      // For debugging purposes
   }
-  return (bitString);
+  return (bitString);                                                             // We return the bitstring so that the cell can be propperly selected
 }
 
-int Stringtoint (String Toint) {
-  String OutString = String("");
-  for (uint8_t i = 2; Toint.length() > i; i += 2)
+
+int Stringtoint (String Toint) {                                                  // This function transforms the heating and cooling commands to integer values that we can use for PWM
+  
+  String OutString = String("");                                                  // We initialize some variables
+  
+  for (uint8_t i = 2; Toint.length() > i; i += 2)                                 // We scan the command skipping the first two values to avoid the letter (H or C) itself and start converting the string character by character to an integer
   {
-    OutString += (Toint.substring(i, i + 2).toInt() - 48);
+    OutString += (Toint.substring(i, i + 2).toInt() - 48);                        // We extract two values from the string, which correspond to one character and we convert them to an integer, we substract 48 because of the ascii convention
   }
-  //  Serial.print(OutString);
-  return OutString.toInt();
+  
+  //  Serial.print(OutString);                                                    // For debugging purposes
+  
+  return OutString.toInt();                                                       // Finally we convert the resulting string, which contains the number in the shape of a string, and we return it as an integer.
 }
 
-String SelectedCell ()
+
+String SelectedCell ()                                                            // This function scans the serial input, extracts the characters sent to the arduino and returns them as a string 
 {
-  String CellNum;                                                  // String that will determine the cell being measured
-  CellNum = String("");                                            // Assign a void value to the string CellNum
-  delay(50);                                                   //Small delay to allow for the serial to buffer all the data
-  if (Serial.available() > 1)  // If there are in the serial 2 or 3 values (L12 counts as 3 and R1 counts as 2 values) read the seria, otherwise (see else if)
+  String CellNum;                                                                 // String that will determine the cell being measured
+  CellNum = String("");                                                           // Assign a void value to the string CellNum
+  
+  delay(50);                                                                      // Small delay to allow for the serial to buffer all the data
+  
+  if (Serial.available() > 1)                                                     // If there is anything on the serial we will read it and process it
   {
-    CellNum = String("");                          //Reset CellNum to a blank space before reading
-    for (int i = Serial.available(); i > 0; i--) // Take the amount of digits in the serial and read them; i.e if the Serial.available() is 3 it will read the serial 3 times
+    CellNum = String("");                                                         // Reset CellNum to a blank space before reading
+    for (int i = Serial.available(); i > 0; i--)                                  // Take the amount of digits in the serial and read them; i.e if the Serial.available() is 3 it will read the serial 3 times
     {
-      CellNum += Serial.read(); // Append the read value to the previous one to form a complete string with all the values from the serial
+      CellNum += Serial.read();                                                   // Append the read value to the previous one to form a complete string with all the values from the serial
     }
-    Serial.println(CellNum);  //Print the raw data for development purposes //Comment if not developing
+    //Serial.println(CellNum);                                                    // Print the raw data for development purposes //Comment if not developing
   }
-  return (CellNum);     //As this is a function it returns the string of the CellNum that has been selected
+  return (CellNum);                                                               // As this is a function it returns the string of the CellNum that has been selected
 }
