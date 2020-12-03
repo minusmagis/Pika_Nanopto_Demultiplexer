@@ -320,7 +320,7 @@ String SelectedCellName(String CellName)                                      //
             
       PWMSignal = Stringtoint(CellName);                                          // We turn the CellName which contains the 3 digit number into an integer using the Stringtoint() function
       PWMSignal = constrain(PWMSignal, 0, 255);                                   // We constrain the input value within the limits of the arduino PWM
-      digitalWrite(HnCPin, LOW);                                                  // Bring the pin low to set it for heating
+      digitalWrite(HnCPin, HIGH);                                                  // Bring the pin low to set it for heating
       delay(10);                                                                  // A small delay prevents having the H bridge in short circuit
       analogWrite(PWMPin, PWMSignal);                                             // Write the power at wich you want to heat up
             
@@ -336,7 +336,7 @@ String SelectedCellName(String CellName)                                      //
 
       PWMSignal = Stringtoint(CellName);                                          // We turn the CellName which contains the 3 digit number into an integer using the Stringtoint() function
       PWMSignal = constrain(PWMSignal, 0, 255);                                   // We constrain the input value within the limits of the arduino PWM
-      digitalWrite(HnCPin, HIGH);                                                 // Bring the pin high to set it for cooling
+      digitalWrite(HnCPin, LOW);                                                 // Bring the pin high to set it for cooling
       delay(10);                                                                  // A small delay prevents having the H bridge in short circuit
       analogWrite(PWMPin, PWMSignal);                                             //Write the power at wich you want to cool down
 
