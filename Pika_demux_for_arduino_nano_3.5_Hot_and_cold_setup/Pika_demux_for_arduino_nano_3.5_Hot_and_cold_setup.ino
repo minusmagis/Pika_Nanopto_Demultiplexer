@@ -324,8 +324,8 @@ String SelectedCellName(String CellName)                                      //
       delay(10);                                                                  // A small delay prevents having the H bridge in short circuit
       analogWrite(PWMPin, PWMSignal);                                             // Write the power at wich you want to heat up
             
-      //Serial.print("Heating at this power = ");                                 // For debugging purposes
-      //Serial.println(PWMSignal);
+      Serial.print("Heating at this power = ");                                 // For debugging purposes
+      Serial.println(PWMSignal);
     }
   }
   else if (HotCold == "67")                                                       // If the first letter is an C it means that the user wants to cool down the holder
@@ -340,8 +340,8 @@ String SelectedCellName(String CellName)                                      //
       delay(10);                                                                  // A small delay prevents having the H bridge in short circuit
       analogWrite(PWMPin, PWMSignal);                                             //Write the power at wich you want to cool down
 
-      //Serial.print("Cooling at this power = ");                                 // For debugging purposes
-      //Serial.println(PWMSignal);
+      Serial.print("Cooling at this power = ");                                 // For debugging purposes
+      Serial.println(PWMSignal);
     }
   }
   
@@ -382,7 +382,7 @@ String SelectedCell ()                                                          
     {
       CellNum += Serial.read();                                                   // Append the read value to the previous one to form a complete string with all the values from the serial
     }
-    //Serial.println(CellNum);                                                    // Print the raw data for development purposes //Comment if not developing
+    Serial.println(CellNum);                                                    // Print the raw data for development purposes //Comment if not developing
   }
   return (CellNum);                                                               // As this is a function it returns the string of the CellNum that has been selected
 }
