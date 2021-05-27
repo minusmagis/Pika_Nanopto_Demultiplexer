@@ -26,6 +26,8 @@ uint8_t NotBit3 = 0;
 uint8_t NotBit4 = 0;
 uint8_t NotBit5 = 0;
 
+#define Relay_Delay 10000
+
 
 // This is a very simple setup loop that sets all pins as outputs and begins serial coms
 void setup()
@@ -104,30 +106,30 @@ void loop()
         digitalWrite(3, Bit1);                                                // Write the value of BitX (etither 0 or 1) to each pin on the arduino to contact the cell
         digitalWrite(2, NotBit1);                                             // We write the inverse value on the reset pins so that we make sure each relay is on the desired position. (These relays are bistable so they need to be set
                                                                               // and reset so that they are placed on the propper position
-        delay(5);                                                             // We introduce a small delay so that the relays have time to switch
+        delay(Relay_Delay);                                                             // We introduce a small delay so that the relays have time to switch
                                                                                   
         digitalWrite(2, LOW);                                                 // We set the set and reset to low to lower power consumption
         digitalWrite(3, LOW);
-        delay(5);
+        delay(Relay_Delay);
         
         digitalWrite(A4, Bit2);                                               // We repeat for every pin untill every relay is on their desired position
         digitalWrite(A5, NotBit2);
-        delay(5);
+        delay(Relay_Delay);
         digitalWrite(A4, LOW);
         digitalWrite(A5, LOW);
-        delay(5);
+        delay(Relay_Delay);
         digitalWrite(4, Bit3);
         digitalWrite(5, NotBit3);
-        delay(5);
+        delay(Relay_Delay);
         digitalWrite(4, LOW);
         digitalWrite(5, LOW);
 
-        delay(5);
+        delay(Relay_Delay);
         digitalWrite(A1, Bit4);
         digitalWrite(A0, Bit4);
         digitalWrite(A3, NotBit4);
         digitalWrite(A2, NotBit4);
-        delay(5);
+        delay(Relay_Delay);
         
         for (uint8_t i = 2; i < 14; i++)                                      //Write low on every bit to limit current consumption, in this way we give all the power to the following bits, which will require it
         {
@@ -141,7 +143,7 @@ void loop()
         digitalWrite(A5, LOW);
         digitalWrite(A6, LOW);
         digitalWrite(A7, LOW);
-        delay(5);
+        delay(Relay_Delay);
         digitalWrite(10, Bit5);
         digitalWrite(11, Bit5);
         digitalWrite(12, Bit5);
@@ -150,7 +152,7 @@ void loop()
         digitalWrite(7, NotBit5);
         digitalWrite(8, NotBit5);
         digitalWrite(9, NotBit5);
-        delay(5);
+        delay(Relay_Delay);
         
         for (uint8_t i = 2; i < 14; i++)                                      // We finally write all bits to LOW to reduce power consumption
         {
