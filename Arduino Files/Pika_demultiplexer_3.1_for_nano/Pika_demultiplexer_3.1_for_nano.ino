@@ -2,10 +2,10 @@
     Master thesis arduino Nanopto time saver
     This programme is used to control a demultiplexer of 24-1 channels.
     It needs a specific pcb design, for more questions contact minusmagis@gmail.com
-    Remember to send the data witout line ending!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  (otherwise it will not work :3 )
-                                                                          READ THE LINE IMMEDIATELY ABOVE
+    
+                                                                              READ THE LINE IMMEDIATELY ABOVE
     2020 09 07 changes: The mapping was completely wrong and we are now recalibrating it
-    2021 04 09 changes: We took the Hot n cold arduino script and erased the changes that controlled the h bridge so that it can work again. 
+    2021 04 09 changes: We took the Hot n cold arduino script and erased the changes that controlled the h bridge so that it can work again.
     The layout now takes R.01 as the cell closest to the center and closest to the arduino nano. It is ment to be used with the cells placed on the other side of the arduino.
 */
 
@@ -26,7 +26,7 @@ uint8_t NotBit3 = 0;
 uint8_t NotBit4 = 0;
 uint8_t NotBit5 = 0;
 
-#define Relay_Delay 10000
+#define Relay_Delay 10
 
 
 // This is a very simple setup loop that sets all pins as outputs and begins serial coms
@@ -55,27 +55,29 @@ void setup()
 void loop()
 {
   if (Serial.available() > 0)                                                 // If the serial is trying to communicate calls the functiond SelectedCell() stated below and
-  {                                                                           // assigns its value to the string Cell that will determine which cell is being measured
-    Cell = SelectedCell();                                                    // The function SelectedCell extracts the characters from the serial and stores them within a string                               
-    
+  { // assigns its value to the string Cell that will determine which cell is being measured
+    Cell = SelectedCell();                                                    // The function SelectedCell extracts the characters from the serial and stores them within a string
+
+    Cell = Carriage_Endline_Remover(Cell);
+
     //Serial.println(Cell);                                                   // For debugging purposes
-    
+
     if (Cell.length() > 3)                                                    // If the length of the command is longer than 3, meaning it is most likely a complete command c
-    {                                                                         // we call the function SelectedCellName that will output the label of the cell as well as the bitstring needed to contact that specific cell
-          
+    { // we call the function SelectedCellName that will output the label of the cell as well as the bitstring needed to contact that specific cell
+
       //Serial.print("Plain data from serial = ");                            // For debugging purposes
-      
+
       CellBit = SelectedCellName(Cell);                                       // We assign the bitstring (binary code) of the cell that we desire to connect to the variable CellBit
-      
+
       //Serial.println(CellBit);                                              // For debugging purposes
-      
+
       if (CellBit != "")                                                      // If the bitstring is not empty, it means we have a valid input that we can use to decide which relays we have to flip
       {
-        
+
         //        Serial.print("     Cell binary code = ");                   // For debugging purposes
-        //        Serial.println(CellBit);                   
-        //        Serial.println("-----------------------------------------------"); 
-        
+        //        Serial.println(CellBit);
+        //        Serial.println("-----------------------------------------------");
+
         Bit1 = ReadBit(CellBit, 1);                                           // Assign the value of the first bit from the bitcode to a variable Bit1
         Bit2 = ReadBit(CellBit, 2);                                           // Assign the value of the second bit from the bitcode to a variable Bit2
         Bit3 = ReadBit(CellBit, 3);                                           // Assign the value of the third bit from the bitcode to a variable Bit3
@@ -86,9 +88,9 @@ void loop()
         NotBit3 = invert(Bit3);
         NotBit4 = invert(Bit4);
         NotBit5 = invert(Bit5);
-        
+
         //        Serial.print(Bit1);                                         // For debugging purposes
-        //        Serial.println(NotBit1);  
+        //        Serial.println(NotBit1);
         //        Serial.print(Bit2);
         //        Serial.println(NotBit2);
         //        Serial.print(Bit3);
@@ -101,17 +103,17 @@ void loop()
         //        Serial.println("Please introduce the next cell label you want to measure:");  // Write this message on the serial port so that the use knows that he can change the cell number
 
         digitalWrite(2, LOW);                                                 // The pin 0 reset and set is always ground in this case one corresponds to pin 14 and the other to pin 2 on the arduino,
-                                                                              // pin 14 is ground by default in arduino
-                                                                              
+        // pin 14 is ground by default in arduino
+
         digitalWrite(3, Bit1);                                                // Write the value of BitX (etither 0 or 1) to each pin on the arduino to contact the cell
         digitalWrite(2, NotBit1);                                             // We write the inverse value on the reset pins so that we make sure each relay is on the desired position. (These relays are bistable so they need to be set
-                                                                              // and reset so that they are placed on the propper position
+        // and reset so that they are placed on the propper position
         delay(Relay_Delay);                                                             // We introduce a small delay so that the relays have time to switch
-                                                                                  
+
         digitalWrite(2, LOW);                                                 // We set the set and reset to low to lower power consumption
         digitalWrite(3, LOW);
         delay(Relay_Delay);
-        
+
         digitalWrite(A4, Bit2);                                               // We repeat for every pin untill every relay is on their desired position
         digitalWrite(A5, NotBit2);
         delay(Relay_Delay);
@@ -130,7 +132,7 @@ void loop()
         digitalWrite(A3, NotBit4);
         digitalWrite(A2, NotBit4);
         delay(Relay_Delay);
-        
+
         for (uint8_t i = 2; i < 14; i++)                                      //Write low on every bit to limit current consumption, in this way we give all the power to the following bits, which will require it
         {
           digitalWrite(i, LOW);
@@ -153,7 +155,7 @@ void loop()
         digitalWrite(8, NotBit5);
         digitalWrite(9, NotBit5);
         delay(Relay_Delay);
-        
+
         for (uint8_t i = 2; i < 14; i++)                                      // We finally write all bits to LOW to reduce power consumption
         {
           digitalWrite(i, LOW);
@@ -169,19 +171,19 @@ void loop()
 
       }
     }
-    
+
     else {
-      
+
       //Serial.println("Incorrect Cellbit");                                  // For debugging purposes
-      
+
       Serial.read();                                                          // In case we receive an empty input we read the serial to clear it
     }
   }
 }
 
 uint8_t invert(uint8_t value)                                                 // This is a small function that inverts the value of the incoming bit, if the input is 1 the output is 0 and viceversa, the difference with a NOT statement
-{                                                                             // is that this works with a uint8_t value and not a boolean
-  
+{ // is that this works with a uint8_t value and not a boolean
+
   uint8_t Buffer = 0;                                                         //Buffer value that will be used in the function
   if (value == 1 || value == 0)                                               //Only perform the function if the input values are binary
   {
@@ -207,9 +209,9 @@ uint8_t ReadBit (String BitCode, uint8_t BitNum)                              //
 String SelectedCellName(String CellName)                                      // This function translates the input serial string to its corresponding bitstring, it is grossely unoptimized but it works.
 {
   String bitString = "";
-  
-  if (CellName == "82464849")                               //R.01 *          // If the input CellName is equal to this particular string, which in this case corresponds to R.01 we set the bitstring to 01000 which turns the 
-  {                                                                           // relays so that the connected cell is R.01
+
+  if (CellName == "82464849")                               //R.01 *          // If the input CellName is equal to this particular string, which in this case corresponds to R.01 we set the bitstring to 01000 which turns the
+  { // relays so that the connected cell is R.01
     bitString = String("01000");                            //R.01 *          // We chech if the cellname corresponds to any of the specified commands and if it does we set the bitstring to its corresponding cell
   }
   else if (CellName == "82464850")                          //R.02 *
@@ -304,7 +306,7 @@ String SelectedCellName(String CellName)                                      //
   {
     bitString = String("10000");                            //L.12 *
   }
-  
+
   else
   {
     //Serial.println("Cell not recognized");                                      // For debugging purposes
@@ -313,13 +315,13 @@ String SelectedCellName(String CellName)                                      //
 }
 
 
-String SelectedCell ()                                                            // This function scans the serial input, extracts the characters sent to the arduino and returns them as a string 
+String SelectedCell ()                                                            // This function scans the serial input, extracts the characters sent to the arduino and returns them as a string
 {
   String CellNum;                                                                 // String that will determine the cell being measured
   CellNum = String("");                                                           // Assign a void value to the string CellNum
-  
+
   delay(50);                                                                      // Small delay to allow for the serial to buffer all the data
-  
+
   if (Serial.available() > 1)                                                     // If there is anything on the serial we will read it and process it
   {
     CellNum = String("");                                                         // Reset CellNum to a blank space before reading
@@ -327,7 +329,25 @@ String SelectedCell ()                                                          
     {
       CellNum += Serial.read();                                                   // Append the read value to the previous one to form a complete string with all the values from the serial
     }
-    Serial.println(CellNum);                                                    // Print the raw data for development purposes //Comment if not developing
+    Serial.println(CellNum);                                                      // Print the raw data for development purposes //Comment if not developing
   }
   return (CellNum);                                                               // As this is a function it returns the string of the CellNum that has been selected
+}
+
+String Carriage_Endline_Remover (String CellName)                                 // This function removes the endline and the carriage return character from the input so they are not taken into account when receiving data
+{
+  String Last_Char = CellName.substring(CellName.length() - 2 );
+//  Serial.println(Last_Char);
+  if( Last_Char == "10" || Last_Char == "13" )
+  {
+    CellName = CellName.substring(0,CellName.length() - 2 );
+  }
+  Last_Char = CellName.substring(CellName.length() - 2 );
+  
+  if( Last_Char == "10" || Last_Char == "13" )
+  {
+    CellName = CellName.substring(0,CellName.length() - 2 );
+  }
+//  Serial.println(CellName);
+  return (CellName);
 }
